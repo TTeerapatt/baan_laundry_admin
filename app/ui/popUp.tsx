@@ -36,7 +36,7 @@ type ConfirmPopupOptions = {
   cancelText?: string;
 };
 
-const SUCCESS_TIMER_MS = 1500;
+const SUCCESS_TIMER_MS = 1000;
 
 export function showStatusPopup({
   title = "สำเร็จ",

@@ -12,8 +12,8 @@ export default function SideBar() {
     <aside className="flex h-screen w-[250px] shrink-0 flex-col border-r border-[#e8ecf4] bg-white">
       <div className="flex h-[88px] items-center justify-center border-b border-[#eef1f7] px-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#2553D8]/10">
-            <MdLocalLaundryService className="h-7 w-7 text-[#2553D8]" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2553D8]/10">
+            <MdLocalLaundryService className="h-10 w-10 text-[#2553D8]" />
           </div>
           <div className="leading-tight">
             <p className="text-[15px] font-bold text-[#1f2640]">Baan Laundry</p>

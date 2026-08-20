@@ -12,7 +12,8 @@ export type StoredAdmin = {
 
 export function getAdminToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(ADMIN_TOKEN_KEY);
+  const token = localStorage.getItem(ADMIN_TOKEN_KEY)?.trim() || "";
+  return token || null;
 }
 
 export function getStoredAdmin(): StoredAdmin | null {
