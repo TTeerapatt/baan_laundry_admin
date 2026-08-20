@@ -24,3 +24,43 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.app-swal-popup {
+  border-radius: 16px !important;
+}
+
+.app-swal-title {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+}
+
+.app-swal-icon {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.app-swal-actions {
+  display: flex !important;
+  gap: 0.75rem !important;
+  width: 100% !important;
+  margin: 1rem 0 0 !important;
+}
+
+.app-swal-confirm-btn,
+.app-swal-cancel-btn {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  border-radius: 10px !important;
+  padding: 0.5rem 1.1rem !important;
+  font-weight: 600 !important;
+}
+
+.app-swal-confirm-btn {
+  background: #2553d8 !important;
+}
+
+.app-swal-cancel-btn {
+  background: #e5e7eb !important;
+  color: #374151 !important;
+}
