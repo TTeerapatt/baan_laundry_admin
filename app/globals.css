@@ -34,6 +34,12 @@ body {
   font-weight: 600 !important;
 }
 
+.app-swal-html {
+  font-size: 0.875rem !important;
+  color: #4b5563 !important;
+  margin: 0.25rem 0 0 !important;
+}
+
 .app-swal-icon {
   margin-top: 0.25rem !important;
   margin-bottom: 0.5rem !important;
