@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { ADMIN_TOKEN_KEY } from "@/app/lib/adminStorage";
 
 const base_url = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
@@ -11,7 +12,10 @@ const apiServices = axios.create(axiosConfig);
 
 apiServices.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("baan_laundry_token");
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem(ADMIN_TOKEN_KEY)
+        : null;
     if (token) {
       config.headers = Object.assign({}, config.headers, {
         Authorization: `Bearer ${token}`,

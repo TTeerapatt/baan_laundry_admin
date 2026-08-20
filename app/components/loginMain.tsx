@@ -6,6 +6,7 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { MdLocalLaundryService } from "react-icons/md";
 import adminAPI from "@/app/services/admin/adminAPI";
+import { ADMIN_PROFILE_KEY, ADMIN_TOKEN_KEY } from "@/app/lib/adminStorage";
 import { popup } from "@/app/ui/popUp";
 
 type LoginApiResult =
@@ -97,9 +98,9 @@ export default function LoginMain() {
         return;
       }
 
-      localStorage.setItem("baan_laundry_token", token);
+      localStorage.setItem(ADMIN_TOKEN_KEY, token);
       if (admin) {
-        localStorage.setItem("baan_laundry_admin", JSON.stringify(admin));
+        localStorage.setItem(ADMIN_PROFILE_KEY, JSON.stringify(admin));
       }
 
       // Wait until success popup closes (timer bar finishes or user clicks OK), then redirect
