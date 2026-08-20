@@ -43,7 +43,7 @@ export default function Header() {
     <header
       className="flex h-[72px] w-full items-center justify-between px-6 text-white shadow-[0_6px_18px_rgba(31,41,87,0.18)]"
       style={{
-        backgroundImage: "linear-gradient(90deg, #4C7DFF 0%, #2553D8 100%)",
+        backgroundImage: "linear-gradient(180deg, #4C7DFF 0%, #2553D8 100%)",
       }}
     >
       <h1 className="text-[22px] font-bold tracking-wide">{title}</h1>
@@ -72,7 +72,7 @@ export default function Header() {
           aria-label="ออกจากระบบ"
         >
           <FiLogOut className="h-4 w-4" />
-          Logout
+          {/* Logout */}
         </button>
       </div>
     </header>
