@@ -26,30 +26,52 @@ body {
 }
 
 .app-swal-popup {
-  border-radius: 16px !important;
-}
-
-.app-swal-title {
-  font-size: 1rem !important;
-  font-weight: 600 !important;
-}
-
-.app-swal-html {
-  font-size: 0.875rem !important;
-  color: #4b5563 !important;
-  margin: 0.25rem 0 0 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18) !important;
 }
 
 .app-swal-icon {
-  margin-top: 0.25rem !important;
-  margin-bottom: 0.5rem !important;
+  margin: 0.15rem auto 0.85rem !important;
+  border-color: #2553d8 !important;
+  color: #2553d8 !important;
+}
+
+.app-swal-title {
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  color: #163a7f !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.app-swal-text {
+  font-size: 0.92rem !important;
+  font-weight: 400 !important;
+  color: #3b5b98 !important;
+  line-height: 1.45 !important;
+  margin: 0.45rem 0 0 !important;
+  padding: 0 !important;
 }
 
 .app-swal-actions {
   display: flex !important;
   gap: 0.75rem !important;
   width: 100% !important;
-  margin: 1rem 0 0 !important;
+  margin: 1.35rem 0 0 !important;
+  justify-content: center !important;
+}
+
+.app-swal-actions-single {
+  justify-content: center !important;
+}
+
+.app-swal-actions-single .app-swal-confirm-btn {
+  flex: 0 1 auto !important;
+  min-width: 7.5rem !important;
+  width: auto !important;
+  padding-left: 1.75rem !important;
+  padding-right: 1.75rem !important;
 }
 
 .app-swal-confirm-btn,
@@ -57,13 +79,20 @@ body {
   flex: 1 1 0 !important;
   min-width: 0 !important;
   width: 100% !important;
-  border-radius: 10px !important;
-  padding: 0.5rem 1.1rem !important;
+  border-radius: 12px !important;
+  padding: 0.65rem 1.1rem !important;
   font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  box-shadow: none !important;
 }
 
 .app-swal-confirm-btn {
   background: #2553d8 !important;
+  color: #ffffff !important;
+}
+
+.app-swal-confirm-btn:focus {
+  box-shadow: 0 0 0 3px rgba(37, 83, 216, 0.28) !important;
 }
 
 .app-swal-cancel-btn {
