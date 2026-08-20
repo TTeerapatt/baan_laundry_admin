@@ -25,9 +25,34 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Hide browser native password reveal so custom toggle is the only control */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none;
+}
+
 .app-swal-popup {
   border-radius: 24px !important;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18) !important;
+  overflow: hidden !important;
+}
+
+.app-swal-timer-bar {
+  background: #2553d8 !important;
+  height: 4px !important;
+}
+
+.swal2-timer-progress-bar-container {
+  position: absolute !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  height: 4px !important;
+  overflow: hidden !important;
+  border-bottom-left-radius: 24px !important;
+  border-bottom-right-radius: 24px !important;
+  background: rgba(37, 83, 216, 0.12) !important;
 }
 
 .app-swal-icon {

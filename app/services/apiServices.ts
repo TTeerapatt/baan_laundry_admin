@@ -11,7 +11,7 @@ const apiServices = axios.create(axiosConfig);
 
 apiServices.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("baan_laundry_token");
     if (token) {
       config.headers = Object.assign({}, config.headers, {
         Authorization: `Bearer ${token}`,

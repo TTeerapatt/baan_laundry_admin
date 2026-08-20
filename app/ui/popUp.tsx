@@ -7,7 +7,7 @@ const TEXT = "#163a7f";
 const CANCEL_BG = "#e5e7eb";
 
 const LAYOUT = {
-  width: "320px",
+  width: "360px",
   padding: "1.75rem 1.5rem 1.5rem",
   background: "#ffffff",
   color: TEXT,
@@ -24,6 +24,8 @@ type StatusPopupOptions = {
   text?: string;
   icon?: SweetAlertIcon;
   confirmText?: string;
+  timer?: number;
+  timerProgressBar?: boolean;
 };
 
 type ConfirmPopupOptions = {
@@ -34,11 +36,15 @@ type ConfirmPopupOptions = {
   cancelText?: string;
 };
 
+const SUCCESS_TIMER_MS = 1500;
+
 export function showStatusPopup({
   title = "สำเร็จ",
   text,
   icon = "info",
   confirmText = "ตกลง",
+  timer,
+  timerProgressBar = false,
 }: StatusPopupOptions = {}): Promise<SweetAlertResult> {
   return Swal.fire({
     title,
@@ -49,6 +55,8 @@ export function showStatusPopup({
     confirmButtonText: confirmText,
     allowOutsideClick: false,
     allowEscapeKey: true,
+    timer,
+    timerProgressBar: Boolean(timer) && timerProgressBar,
     width: LAYOUT.width,
     padding: LAYOUT.padding,
     background: LAYOUT.background,
@@ -64,6 +72,7 @@ export function showStatusPopup({
       icon: "app-swal-icon",
       actions: "app-swal-actions app-swal-actions-single",
       confirmButton: "app-swal-confirm-btn",
+      timerProgressBar: "app-swal-timer-bar",
     },
   });
 }
@@ -111,8 +120,19 @@ export async function showConfirmPopup({
 }
 
 export const popup = {
-  success: (title = "สำเร็จ", text?: string) =>
-    showStatusPopup({ title, text, icon: "success" }),
+  success: (
+    title = "สำเร็จ",
+    text?: string,
+    options?: Pick<StatusPopupOptions, "confirmText" | "timer" | "timerProgressBar">
+  ) =>
+    showStatusPopup({
+      title,
+      text,
+      icon: "success",
+      timer: SUCCESS_TIMER_MS,
+      timerProgressBar: true,
+      ...options,
+    }),
   error: (title = "เกิดข้อผิดพลาด", text?: string) =>
     showStatusPopup({ title, text, icon: "error" }),
   warning: (title = "คำเตือน", text?: string) =>

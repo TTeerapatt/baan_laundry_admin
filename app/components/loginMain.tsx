@@ -14,23 +14,38 @@ type LoginApiResult =
       data?: {
         token?: string;
         admin?: {
-          id: number;
+          id: string | number;
           email: string;
           display_name: string;
           role: string;
+          created_at?: string;
+          updated_at?: string;
         };
       };
       status?: string;
       errMessage?: string;
+      message?: string;
     }
   | null
   | undefined;
 
+function localizeLoginError(message: string): string {
+  const normalized = message.trim().toLowerCase();
+  if (normalized === "invalid email or password") {
+    return "อีเมล หรือ รหัสผ่าน ไม่ถูกต้อง";
+  }
+  return message;
+}
+
 function getErrorMessage(result: LoginApiResult, fallback: string): string {
   if (!result) return fallback;
-  if (typeof result.errMessage === "string" && result.errMessage.trim()) {
-    return result.errMessage;
-  }
+
+  const raw =
+    (typeof result.errMessage === "string" && result.errMessage.trim()) ||
+    (typeof result.message === "string" && result.message.trim()) ||
+    "";
+
+  if (raw) return localizeLoginError(raw);
   return fallback;
 }
 
@@ -82,23 +97,24 @@ export default function LoginMain() {
         return;
       }
 
-      localStorage.setItem("token", token);
+      localStorage.setItem("baan_laundry_token", token);
       if (admin) {
-        localStorage.setItem("admin", JSON.stringify(admin));
+        localStorage.setItem("baan_laundry_admin", JSON.stringify(admin));
       }
 
+      // Wait until success popup closes (timer bar finishes or user clicks OK), then redirect
       await popup.success(
         "เข้าสู่ระบบสำเร็จ",
         "ยินดีต้อนรับเข้าสู่ระบบผู้ดูแลระบบ"
       );
       router.push("/");
     } catch (err: unknown) {
-      const message =
+      const raw =
         err instanceof Error
           ? err.message || "เกิดข้อผิดพลาดในการเชื่อมต่อระบบ"
           : "เกิดข้อผิดพลาดในการเชื่อมต่อระบบ";
 
-      await popup.error("เข้าสู่ระบบไม่สำเร็จ", message);
+      await popup.error("เข้าสู่ระบบไม่สำเร็จ", localizeLoginError(raw));
     } finally {
       setIsSubmitting(false);
     }
@@ -195,13 +211,14 @@ export default function LoginMain() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#757d94] hover:text-[#1f2640]"
+                  className="absolute inset-y-0 right-0 z-10 flex items-center pr-3.5 text-[#757d94] hover:text-[#1f2640]"
                   aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                  aria-pressed={showPassword}
                 >
                   {showPassword ? (
-                    <FiEye className="h-5 w-5" />
+                    <FiEyeOff className="h-5 w-5" aria-hidden />
                   ) : (
-                    <FiEyeOff className="h-5 w-5" />
+                    <FiEye className="h-5 w-5" aria-hidden />
                   )}
                 </button>
               </div>
