@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import adminAPI, { type AdminItem } from "@/app/services/admin/adminAPI";
+import { getStoredAdmin } from "@/app/lib/adminStorage";
 import { popup } from "@/app/ui/popUp";
 import { useLoading } from "@/app/providers/LoadingProvider";
 import AdminCreateModal from "./adminCreateModal";
@@ -88,11 +89,25 @@ export default function AdminMain() {
   };
 
   const handleDeleteAdmin = async (admin: AdminItem) => {
+    const currentAdmin = getStoredAdmin();
+    if (
+      currentAdmin &&
+      String(currentAdmin.id) === String(admin.id)
+    ) {
+      await popup.warning(
+        "ลบไม่ได้",
+        "ไม่สามารถลบบัญชีของตัวเองได้"
+      );
+      return;
+    }
+
     const confirmed = await popup.confirmDelete({
       title: "ยืนยันการลบผู้ดูแลระบบ?",
       text: `ต้องการลบ ${admin.display_name} (${admin.email}) ใช่หรือไม่`,
     });
     if (!confirmed) return;
+
+    let deleted = false;
 
     await withLoading(async () => {
       const result = (await adminAPI.softDeleteAdmin(admin.id)) as {
@@ -110,9 +125,13 @@ export default function AdminMain() {
         return;
       }
 
-      await popup.success("ลบสำเร็จ", "ลบผู้ดูแลระบบเรียบร้อยแล้ว");
-      void fetchAdmins();
+      deleted = true;
     }, "กำลังลบผู้ดูแลระบบ...");
+
+    if (!deleted) return;
+
+    void fetchAdmins();
+    await popup.success("ลบสำเร็จ", "ลบผู้ดูแลระบบเรียบร้อยแล้ว");
   };
 
   return (
