@@ -1,3 +1,5 @@
+import AdminMain from "./components/adminMain";
+
 export default function AdminsPage() {
-  return null;
+  return <AdminMain />;
 }
