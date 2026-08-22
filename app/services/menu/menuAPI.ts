@@ -11,6 +11,12 @@ export type MenuLabel = {
   updated_at: string;
 };
 
+export type MenuTabAction = {
+  code: string;
+  name: string;
+  sort_order: number;
+};
+
 export type MenuTab = {
   id: number;
   menu_label_id: number;
@@ -22,6 +28,7 @@ export type MenuTab = {
   sort_order: number;
   created_at: string;
   updated_at: string;
+  actions?: MenuTabAction[];
 };
 
 export type MenuAllResponse = {

@@ -188,7 +188,24 @@ await withLoading(async () => {
 - `useEffect` → เรียก `getXxxAll()` ตอน mount
 - filter client-side ด้วย `useMemo`
 - delete → `popup.confirmDelete` → `withLoading` → `softDeleteXxx` → refresh
-- add/edit → placeholder `popup.info` (ยังไม่มี form)
+- add admin → เปิด `AdminCreateModal` (multi-step) ไม่ใช่ placeholder
+- edit → placeholder `popup.info` (ยังไม่มี form)
+
+### Admin Create Modal (เพิ่มผู้ดูแลระบบ)
+
+ไฟล์: `app/(admin)/admins/components/adminCreateModal.tsx`
+
+Flow 4 ขั้น + หน้า success:
+
+1. **เลือกบทบาท** — `owner` | `admin` | `staff` (ตาม backend `ALLOWED_ROLES`)
+2. **ข้อมูลผู้ใช้งาน** — ฟิลด์ตาม API create: `display_name`, `email`, `password` (+ confirm password ใน UI)
+3. **ขอบเขตสิทธิ์** — ตารางติ๊ก View/Add/Edit/Delete/Export จาก `menuAPI.getMenuAll()`
+   - โครงสร้างหมวด = `labels` + `tabs`
+   - actions ต่อ tab มาจาก backend (`tabs[].actions`) ที่ join จาก `admin_menu_tab_action`
+   - owner: ติ๊กครบและ disabled (ไม่ส่ง `permissions` ตอน create เพราะ owner bypass)
+4. **ยืนยันการสร้าง** — สรุปข้อมูล + ตารางสิทธิ์ → กดยืนยัน → `popup.confirm` → `adminAPI.createAdmin` → หน้า success (ไม่มีส่งเมล)
+
+เปิดจากปุ่ม `onAdd` ใน `adminFilter` ผ่าน state `createOpen` ใน `adminMain`
 
 ### Table.tsx
 
@@ -231,9 +248,11 @@ await withLoading(async () => {
 | `baan_laundry_token` | JWT |
 | `baan_laundry_admin` | โปรไฟล์ admin |
 | `baan_laundry_permission_menu` | menu + actions ของ user |
-| `baan_laundry_menu_all` | master labels/tabs |
+| `baan_laundry_menu_all` | master labels/tabs (+ `tabs[].actions` จาก API) |
 
 Helper: `app/lib/adminStorage.ts` — `get/set/clear` แต่ละ key
+
+**หมายเหตุ `getMenuAll`:** response ของ `GET /admin-menu` คืน `labels`, `tabs` และแต่ละ tab มี `actions: [{ code, name, sort_order }]` จากตาราง `admin_menu_tab_action` — ใช้ตอนตั้งสิทธิ์สร้าง admin
 
 ---
 

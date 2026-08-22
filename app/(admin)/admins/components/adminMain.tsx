@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import adminAPI, { type AdminItem } from "@/app/services/admin/adminAPI";
 import { popup } from "@/app/ui/popUp";
 import { useLoading } from "@/app/providers/LoadingProvider";
+import AdminCreateModal from "./adminCreateModal";
 import AdminFilter from "./adminFilter";
 import AdminTable from "./adminTable";
 
@@ -24,6 +25,7 @@ export default function AdminMain() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
+  const [createOpen, setCreateOpen] = useState(false);
 
   const fetchAdmins = useCallback(async () => {
     setLoading(true);
@@ -59,7 +61,8 @@ export default function AdminMain() {
 
     return admins.filter((admin) => {
       const matchesRole =
-        !roleFilter || String(admin.role || "").trim().toLowerCase() === roleFilter;
+        !roleFilter ||
+        String(admin.role || "").trim().toLowerCase() === roleFilter;
 
       if (!keyword) {
         return matchesRole;
@@ -122,6 +125,7 @@ export default function AdminMain() {
         onSearchChange={setSearch}
         onRoleChange={setRole}
         onClear={handleClearFilter}
+        onAdd={() => setCreateOpen(true)}
       />
 
       <AdminTable
@@ -129,6 +133,14 @@ export default function AdminMain() {
         loading={loading}
         onEdit={handleEditAdmin}
         onDelete={handleDeleteAdmin}
+      />
+
+      <AdminCreateModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={() => {
+          void fetchAdmins();
+        }}
       />
     </div>
   );

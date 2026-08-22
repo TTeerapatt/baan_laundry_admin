@@ -45,6 +45,7 @@ export type StoredMenuTab = {
   sort_order: number;
   created_at: string;
   updated_at: string;
+  actions?: Array<{ code: string; name: string; sort_order: number }>;
 };
 
 export type StoredMenuAll = {
