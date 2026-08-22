@@ -5,6 +5,7 @@ import serviceTypeAPI, {
   type ServiceTypeItem,
 } from "@/app/services/serviceType/serviceTypeAPI";
 import { popup } from "@/app/ui/popUp";
+import { useLoading } from "@/app/providers/LoadingProvider";
 import ServiceTypeFilter from "./serviceTypeFilter";
 import ServiceTypeTable from "./serviceTypeTable";
 
@@ -20,6 +21,7 @@ type ServiceTypeListApiResult =
   | undefined;
 
 export default function ServiceTypeMain() {
+  const { withLoading } = useLoading();
   const [serviceTypes, setServiceTypes] = useState<ServiceTypeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -89,25 +91,27 @@ export default function ServiceTypeMain() {
     });
     if (!confirmed) return;
 
-    const result = (await serviceTypeAPI.softDeleteServiceType(
-      serviceType.id
-    )) as {
-      success?: boolean;
-      status?: string;
-      errMessage?: string;
-      message?: string;
-    };
+    await withLoading(async () => {
+      const result = (await serviceTypeAPI.softDeleteServiceType(
+        serviceType.id
+      )) as {
+        success?: boolean;
+        status?: string;
+        errMessage?: string;
+        message?: string;
+      };
 
-    if (!result || result.status === "failed" || result.success === false) {
-      await popup.error(
-        "ลบไม่สำเร็จ",
-        result?.errMessage || result?.message || "ไม่สามารถลบประเภทบริการได้"
-      );
-      return;
-    }
+      if (!result || result.status === "failed" || result.success === false) {
+        await popup.error(
+          "ลบไม่สำเร็จ",
+          result?.errMessage || result?.message || "ไม่สามารถลบประเภทบริการได้"
+        );
+        return;
+      }
 
-    await popup.success("ลบสำเร็จ", "ลบประเภทบริการเรียบร้อยแล้ว");
-    void fetchServiceTypes();
+      await popup.success("ลบสำเร็จ", "ลบประเภทบริการเรียบร้อยแล้ว");
+      void fetchServiceTypes();
+    }, "กำลังลบประเภทบริการ...");
   };
 
   return (

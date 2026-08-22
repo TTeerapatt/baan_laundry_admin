@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import listTypeAPI, { type ListTypeItem } from "@/app/services/listType/listTypeAPI";
 import { popup } from "@/app/ui/popUp";
+import { useLoading } from "@/app/providers/LoadingProvider";
 import ListTypeFilter from "./listTypeFilter";
 import ListTypeTable from "./listTypeTable";
 
@@ -18,6 +19,7 @@ type ListTypeListApiResult =
   | undefined;
 
 export default function ListTypeMain() {
+  const { withLoading } = useLoading();
   const [listTypes, setListTypes] = useState<ListTypeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -92,23 +94,25 @@ export default function ListTypeMain() {
     });
     if (!confirmed) return;
 
-    const result = (await listTypeAPI.softDeleteListType(listType.id)) as {
-      success?: boolean;
-      status?: string;
-      errMessage?: string;
-      message?: string;
-    };
+    await withLoading(async () => {
+      const result = (await listTypeAPI.softDeleteListType(listType.id)) as {
+        success?: boolean;
+        status?: string;
+        errMessage?: string;
+        message?: string;
+      };
 
-    if (!result || result.status === "failed" || result.success === false) {
-      await popup.error(
-        "ลบไม่สำเร็จ",
-        result?.errMessage || result?.message || "ไม่สามารถลบประเภทรายการได้"
-      );
-      return;
-    }
+      if (!result || result.status === "failed" || result.success === false) {
+        await popup.error(
+          "ลบไม่สำเร็จ",
+          result?.errMessage || result?.message || "ไม่สามารถลบประเภทรายการได้"
+        );
+        return;
+      }
 
-    await popup.success("ลบสำเร็จ", "ลบประเภทรายการเรียบร้อยแล้ว");
-    void fetchListTypes();
+      await popup.success("ลบสำเร็จ", "ลบประเภทรายการเรียบร้อยแล้ว");
+      void fetchListTypes();
+    }, "กำลังลบประเภทรายการ...");
   };
 
   return (

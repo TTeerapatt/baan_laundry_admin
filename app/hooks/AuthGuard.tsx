@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Loading from "@/app/components/loading";
 import { getAdminToken } from "@/app/lib/adminStorage";
 
 type AuthGuardProps = {
@@ -41,9 +42,10 @@ export default function AuthGuard({
 
   if (!allowed) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f4f6fb] text-[#5b657d]">
-        กำลังตรวจสอบสิทธิ์...
-      </div>
+      <Loading
+        variant="fullscreen"
+        message="กำลังตรวจสอบสิทธิ์..."
+      />
     );
   }
 

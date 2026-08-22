@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { FiInbox } from "react-icons/fi";
+import Loading from "@/app/components/loading";
 
 export type TableColumn<T> = {
   key: string;
@@ -31,15 +32,15 @@ function TableState({
   text: string;
   loading?: boolean;
 }) {
+  if (loading) {
+    return <Loading variant="page" message={text} />;
+  }
+
   return (
     <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 px-6 py-10 text-center">
-      {loading ? (
-        <span className="h-10 w-10 animate-spin rounded-full border-[3px] border-[#dbe4ff] border-t-[#2553D8]" />
-      ) : (
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef3ff] text-[#2553D8]">
-          <FiInbox className="h-6 w-6" />
-        </span>
-      )}
+      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef3ff] text-[#2553D8]">
+        <FiInbox className="h-6 w-6" />
+      </span>
       <p className="text-[14px] font-medium text-[#5b657d]">{text}</p>
     </div>
   );

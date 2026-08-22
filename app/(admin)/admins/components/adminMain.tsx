@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import adminAPI, { type AdminItem } from "@/app/services/admin/adminAPI";
 import { popup } from "@/app/ui/popUp";
+import { useLoading } from "@/app/providers/LoadingProvider";
 import AdminFilter from "./adminFilter";
 import AdminTable from "./adminTable";
 
@@ -18,6 +19,7 @@ type AdminListApiResult =
   | undefined;
 
 export default function AdminMain() {
+  const { withLoading } = useLoading();
   const [admins, setAdmins] = useState<AdminItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -91,23 +93,25 @@ export default function AdminMain() {
     });
     if (!confirmed) return;
 
-    const result = (await adminAPI.softDeleteAdmin(admin.id)) as {
-      success?: boolean;
-      status?: string;
-      errMessage?: string;
-      message?: string;
-    };
+    await withLoading(async () => {
+      const result = (await adminAPI.softDeleteAdmin(admin.id)) as {
+        success?: boolean;
+        status?: string;
+        errMessage?: string;
+        message?: string;
+      };
 
-    if (!result || result.status === "failed" || result.success === false) {
-      await popup.error(
-        "ลบไม่สำเร็จ",
-        result?.errMessage || result?.message || "ไม่สามารถลบผู้ดูแลระบบได้"
-      );
-      return;
-    }
+      if (!result || result.status === "failed" || result.success === false) {
+        await popup.error(
+          "ลบไม่สำเร็จ",
+          result?.errMessage || result?.message || "ไม่สามารถลบผู้ดูแลระบบได้"
+        );
+        return;
+      }
 
-    await popup.success("ลบสำเร็จ", "ลบผู้ดูแลระบบเรียบร้อยแล้ว");
-    void fetchAdmins();
+      await popup.success("ลบสำเร็จ", "ลบผู้ดูแลระบบเรียบร้อยแล้ว");
+      void fetchAdmins();
+    }, "กำลังลบผู้ดูแลระบบ...");
   };
 
   return (

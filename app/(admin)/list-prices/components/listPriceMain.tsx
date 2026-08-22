@@ -9,6 +9,7 @@ import serviceTypeAPI, {
   type ServiceTypeItem,
 } from "@/app/services/serviceType/serviceTypeAPI";
 import { popup } from "@/app/ui/popUp";
+import { useLoading } from "@/app/providers/LoadingProvider";
 import ListPriceFilter from "./listPriceFilter";
 import ListPriceTable, { type ListPriceRow } from "./listPriceTable";
 
@@ -35,6 +36,7 @@ function getErrorMessage(
 }
 
 export default function ListPriceMain() {
+  const { withLoading } = useLoading();
   const [listPrices, setListPrices] = useState<ListPriceItem[]>([]);
   const [serviceTypes, setServiceTypes] = useState<ServiceTypeItem[]>([]);
   const [listTypes, setListTypes] = useState<ListTypeItem[]>([]);
@@ -148,23 +150,25 @@ export default function ListPriceMain() {
     });
     if (!confirmed) return;
 
-    const result = (await listPriceAPI.softDeleteListPrice(listPrice.id)) as {
-      success?: boolean;
-      status?: string;
-      errMessage?: string;
-      message?: string;
-    };
+    await withLoading(async () => {
+      const result = (await listPriceAPI.softDeleteListPrice(listPrice.id)) as {
+        success?: boolean;
+        status?: string;
+        errMessage?: string;
+        message?: string;
+      };
 
-    if (!result || result.status === "failed" || result.success === false) {
-      await popup.error(
-        "ลบไม่สำเร็จ",
-        result?.errMessage || result?.message || "ไม่สามารถลบราคาได้"
-      );
-      return;
-    }
+      if (!result || result.status === "failed" || result.success === false) {
+        await popup.error(
+          "ลบไม่สำเร็จ",
+          result?.errMessage || result?.message || "ไม่สามารถลบราคาได้"
+        );
+        return;
+      }
 
-    await popup.success("ลบสำเร็จ", "ลบราคาเรียบร้อยแล้ว");
-    void fetchListPrices();
+      await popup.success("ลบสำเร็จ", "ลบราคาเรียบร้อยแล้ว");
+      void fetchListPrices();
+    }, "กำลังลบราคา...");
   };
 
   return (

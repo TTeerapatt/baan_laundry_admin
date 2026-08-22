@@ -12,10 +12,12 @@ import {
 } from "@/app/lib/adminStorage";
 import { getNavLabelByPath, getTabCodeByPath } from "@/app/lib/navItems";
 import { popup } from "@/app/ui/popUp";
+import { useLoading } from "@/app/providers/LoadingProvider";
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
+  const { withLoading } = useLoading();
   const [admin, setAdmin] = useState<StoredAdmin | null>(null);
   const [menuAll, setMenuAll] = useState<StoredMenuAll | null>(null);
 
@@ -42,7 +44,9 @@ export default function Header() {
     const confirmed = await popup.logout();
     if (!confirmed) return;
 
-    clearAdminSession();
+    await withLoading(async () => {
+      clearAdminSession();
+    }, "กำลังออกจากระบบ...");
     await popup.success("ออกจากระบบสำเร็จ", "คุณได้ออกจากระบบแล้ว");
     router.replace("/login");
   };

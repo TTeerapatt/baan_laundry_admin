@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { MdLocalLaundryService } from "react-icons/md";
+import Loading from "@/app/components/loading";
 import authAPI from "@/app/services/auth/authAPI";
 import menuAPI from "@/app/services/menu/menuAPI";
 import {
@@ -203,7 +203,11 @@ export default function LoginMain() {
   };
 
   return (
-    <div
+    <>
+      {isSubmitting ? (
+        <Loading variant="fullscreen" message="กำลังเข้าสู่ระบบ..." />
+      ) : null}
+      <div
       className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:px-8"
       style={{
         backgroundImage: "linear-gradient(180deg, #6B8CFF 0%, #2553D8 100%)",
@@ -325,18 +329,12 @@ export default function LoginMain() {
               disabled={isSubmitting}
               className="mt-2 flex h-12 w-full cursor-pointer items-center justify-center rounded-xl bg-[#2553D8] text-[15px] font-semibold text-white transition hover:bg-[#1d44b5] focus:outline-none focus:ring-2 focus:ring-[#2553d8]/40 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? (
-                <span className="flex items-center gap-2">
-                  <AiOutlineLoading3Quarters className="h-5 w-5 animate-spin text-white" />
-                  กำลังเข้าสู่ระบบ...
-                </span>
-              ) : (
-                "เข้าสู่ระบบ"
-              )}
+              {isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
             </button>
           </form>
         </div>
       </div>
     </div>
+    </>
   );
 }
