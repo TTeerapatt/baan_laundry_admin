@@ -5,7 +5,7 @@ import adminAPI, { type AdminItem } from "@/app/services/admin/adminAPI";
 import { getStoredAdmin } from "@/app/lib/adminStorage";
 import { popup } from "@/app/ui/popUp";
 import { useLoading } from "@/app/providers/LoadingProvider";
-import AdminCreateModal from "./adminCreateModal";
+import AdminCreateModal from "./adminAction/adminFormModal";
 import AdminFilter from "./adminFilter";
 import AdminTable from "./adminTable";
 

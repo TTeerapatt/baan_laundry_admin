@@ -196,7 +196,10 @@ await withLoading(async () => {
 
 ### Admin Create / Edit Modal
 
-ไฟล์: `app/(admin)/admins/components/adminCreateModal.tsx`
+ไฟล์หลัก: `app/(admin)/admins/components/adminAction/`
+- `adminFormModal.tsx` — state + load/save flow
+- `AdminFormSteps.tsx` — UI แต่ละขั้น + ตารางสิทธิ์
+- `adminFormShared.ts` — types / constants / permission helpers
 
 Flow 4 ขั้น (create / edit ใช้ modal เดียวกัน):
 
