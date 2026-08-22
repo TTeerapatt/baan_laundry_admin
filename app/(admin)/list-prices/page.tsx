@@ -1,3 +1,5 @@
+import ListPriceMain from "./components/listPriceMain";
+
 export default function ListPricesPage() {
-  return null;
+  return <ListPriceMain />;
 }

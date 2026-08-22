@@ -1,3 +1,5 @@
+import ServiceTypeMain from "./components/serviceTypeMain";
+
 export default function ServiceTypesPage() {
-  return null;
+  return <ServiceTypeMain />;
 }
