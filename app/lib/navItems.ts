@@ -33,7 +33,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/orders", label: "ออเดอร์", icon: MdReceiptLong },
   { href: "/customers", label: "ลูกค้า", icon: MdPeople },
   { href: "/service-types", label: "ประเภทบริการ", icon: MdLocalLaundryService },
-  { href: "/list-types", label: "ประเภทรายการ", icon: MdCategory },
+  { href: "/list-types", label: "ประเภทผ้า", icon: MdCategory },
   { href: "/list-prices", label: "ราคา", icon: MdPriceChange },
   { href: "/admins", label: "ผู้ดูแลระบบ", icon: MdAdminPanelSettings },
 ];

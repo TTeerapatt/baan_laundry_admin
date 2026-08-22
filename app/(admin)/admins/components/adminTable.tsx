@@ -88,10 +88,10 @@ export default function AdminTable({
   const columns = useMemo<TableColumn<AdminItem>[]>(
     () => [
       {
-        key: "id",
-        title: "ID",
+        key: "index",
+        title: "ลำดับ",
         cellClassName: "font-medium text-[#5b657d]",
-        render: (admin) => admin.id,
+        render: (_admin, index) => index + 1,
       },
       {
         key: "display_name",
@@ -121,11 +121,11 @@ export default function AdminTable({
         title: "เข้าใช้ล่าสุด",
         render: (admin) => formatDateTime(admin.last_login_at),
       },
-      {
-        key: "created_at",
-        title: "วันที่สร้าง",
-        render: (admin) => formatDateTime(admin.created_at),
-      },
+      // {
+      //   key: "created_at",
+      //   title: "วันที่สร้าง",
+      //   render: (admin) => formatDateTime(admin.created_at),
+      // },
       {
         key: "actions",
         title: "การใช้งาน",

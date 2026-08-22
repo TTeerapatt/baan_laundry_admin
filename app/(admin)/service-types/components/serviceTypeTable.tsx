@@ -66,20 +66,20 @@ export default function ServiceTypeTable({
   const columns = useMemo<TableColumn<ServiceTypeItem>[]>(
     () => [
       {
-        key: "id",
-        title: "ID",
+        key: "index",
+        title: "ลำดับ",
         cellClassName: "font-medium text-[#5b657d]",
-        render: (serviceType) => serviceType.id,
+        render: (_serviceType, index) => index + 1,
       },
-      {
-        key: "code",
-        title: "รหัส",
-        render: (serviceType) => (
-          <span className="inline-flex rounded-full bg-[#eef3ff] px-3 py-1 text-[12px] font-semibold text-[#2553D8] ring-1 ring-[#c7d7ff]">
-            {serviceType.code}
-          </span>
-        ),
-      },
+    //   {
+    //     key: "code",
+    //     title: "รหัส",
+    //     render: (serviceType) => (
+    //       <span className="inline-flex rounded-full bg-[#eef3ff] px-3 py-1 text-[12px] font-semibold text-[#2553D8] ring-1 ring-[#c7d7ff]">
+    //         {serviceType.code}
+    //       </span>
+    //     ),
+    //   },
       {
         key: "name",
         title: "ชื่อ",
@@ -92,11 +92,11 @@ export default function ServiceTypeTable({
         title: "วันที่สร้าง",
         render: (serviceType) => formatDateTime(serviceType.created_at),
       },
-      {
-        key: "updated_at",
-        title: "แก้ไขล่าสุด",
-        render: (serviceType) => formatDateTime(serviceType.updated_at),
-      },
+    //   {
+    //     key: "updated_at",
+    //     title: "แก้ไขล่าสุด",
+    //     render: (serviceType) => formatDateTime(serviceType.updated_at),
+    //   },
       {
         key: "actions",
         title: "การใช้งาน",

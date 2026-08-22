@@ -66,20 +66,20 @@ export default function ListTypeTable({
   const columns = useMemo<TableColumn<ListTypeItem>[]>(
     () => [
       {
-        key: "id",
-        title: "ID",
+        key: "index",
+        title: "ลำดับ",
         cellClassName: "font-medium text-[#5b657d]",
-        render: (listType) => listType.id,
+        render: (_listType, index) => index + 1,
       },
-      {
-        key: "code",
-        title: "รหัส",
-        render: (listType) => (
-          <span className="inline-flex rounded-full bg-[#eef3ff] px-3 py-1 text-[12px] font-semibold text-[#2553D8] ring-1 ring-[#c7d7ff]">
-            {listType.code}
-          </span>
-        ),
-      },
+      // {
+      //   key: "code",
+      //   title: "รหัส",
+      //   render: (listType) => (
+      //     <span className="inline-flex rounded-full bg-[#eef3ff] px-3 py-1 text-[12px] font-semibold text-[#2553D8] ring-1 ring-[#c7d7ff]">
+      //       {listType.code}
+      //     </span>
+      //   ),
+      // },
       {
         key: "name",
         title: "ชื่อ",
@@ -87,21 +87,21 @@ export default function ListTypeTable({
           <span className="font-semibold text-[#1f2640]">{listType.name}</span>
         ),
       },
-      {
-        key: "size",
-        title: "ขนาด",
-        render: (listType) => listType.size,
-      },
+      // {
+      //   key: "size",
+      //   title: "ขนาด",
+      //   render: (listType) => listType.size,
+      // },
       {
         key: "created_at",
         title: "วันที่สร้าง",
         render: (listType) => formatDateTime(listType.created_at),
       },
-      {
-        key: "updated_at",
-        title: "แก้ไขล่าสุด",
-        render: (listType) => formatDateTime(listType.updated_at),
-      },
+      // {
+      //   key: "updated_at",
+      //   title: "แก้ไขล่าสุด",
+      //   render: (listType) => formatDateTime(listType.updated_at),
+      // },
       {
         key: "actions",
         title: "การใช้งาน",

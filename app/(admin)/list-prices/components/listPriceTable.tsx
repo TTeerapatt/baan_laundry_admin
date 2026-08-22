@@ -87,10 +87,15 @@ export default function ListPriceTable({
   const columns = useMemo<TableColumn<ListPriceRow>[]>(
     () => [
       {
-        key: "id",
-        title: "ID",
+        key: "index",
+        title: "ลำดับ",
         cellClassName: "font-medium text-[#5b657d]",
-        render: (listPrice) => listPrice.id,
+        render: (_listPrice, index) => index + 1,
+      },
+      {
+        key: "listTypeName",
+        title: "รายการ",
+        render: (listPrice) => listPrice.listTypeName,
       },
       {
         key: "serviceTypeName",
@@ -100,11 +105,6 @@ export default function ListPriceTable({
             {listPrice.serviceTypeName}
           </span>
         ),
-      },
-      {
-        key: "listTypeName",
-        title: "รายการ",
-        render: (listPrice) => listPrice.listTypeName,
       },
       {
         key: "unit_price",
@@ -120,11 +120,11 @@ export default function ListPriceTable({
         title: "วันที่สร้าง",
         render: (listPrice) => formatDateTime(listPrice.created_at),
       },
-      {
-        key: "updated_at",
-        title: "แก้ไขล่าสุด",
-        render: (listPrice) => formatDateTime(listPrice.updated_at),
-      },
+      // {
+      //   key: "updated_at",
+      //   title: "แก้ไขล่าสุด",
+      //   render: (listPrice) => formatDateTime(listPrice.updated_at),
+      // },
       {
         key: "actions",
         title: "การใช้งาน",

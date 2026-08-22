@@ -66,10 +66,10 @@ export default function CustomerTable({
   const columns = useMemo<TableColumn<UserItem>[]>(
     () => [
       {
-        key: "id",
-        title: "ID",
+        key: "index",
+        title: "ลำดับ",
         cellClassName: "font-medium text-[#5b657d]",
-        render: (customer) => customer.id,
+        render: (_customer, index) => index + 1,
       },
       {
         key: "phone",
