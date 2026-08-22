@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { MdLocalLaundryService } from "react-icons/md";
-import Loading from "@/app/components/loading";
 import authAPI from "@/app/services/auth/authAPI";
 import menuAPI from "@/app/services/menu/menuAPI";
 import {
@@ -203,11 +202,7 @@ export default function LoginMain() {
   };
 
   return (
-    <>
-      {isSubmitting ? (
-        <Loading variant="fullscreen" message="กำลังเข้าสู่ระบบ..." />
-      ) : null}
-      <div
+    <div
       className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:px-8"
       style={{
         backgroundImage: "linear-gradient(180deg, #6B8CFF 0%, #2553D8 100%)",
@@ -335,6 +330,5 @@ export default function LoginMain() {
         </div>
       </div>
     </div>
-    </>
   );
 }

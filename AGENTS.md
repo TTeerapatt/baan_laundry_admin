@@ -115,7 +115,7 @@ LoadingProvider
 
 | variant | ใช้เมื่อ | ตำแหน่ง |
 |---------|----------|---------|
-| `fullscreen` | login, auth guard | `fixed inset-0 z-[9999]` ทับทั้งจอ |
+| `fullscreen` | auth guard | `fixed inset-0 z-[9999]` ทับทั้งจอ |
 | `overlay` | เปลี่ยนหน้า, ลบข้อมูล, logout | `absolute inset-0` ทับเฉพาะ `<main>` (parent ต้อง `relative`) |
 | `page` | โหลดตารางครั้งแรก | ใน `DataTable` แทน spinner เก่า |
 | `inline` | จุดเล็กๆ ในหน้า | default |
@@ -123,7 +123,7 @@ LoadingProvider
 ```tsx
 import Loading from "@/app/components/loading";
 
-<Loading variant="fullscreen" message="กำลังเข้าสู่ระบบ..." />
+<Loading variant="fullscreen" message="กำลังตรวจสอบสิทธิ์..." />
 <Loading variant="overlay" message="กำลังลบข้อมูล..." />
 <Loading variant="page" message="กำลังโหลดข้อมูลลูกค้า..." />
 ```
@@ -154,7 +154,7 @@ await withLoading(async () => {
 **ข้อควรระวัง**
 
 - `useLoading()` ใช้ได้เฉพาะภายใน `LoadingProvider` (อยู่ใน `AdminShell`)
-- หน้า login **ไม่มี** `LoadingProvider` — ใช้ `<Loading variant="fullscreen" />` ตรงๆ จาก state `isSubmitting`
+- หน้า login **ไม่มี** `LoadingProvider` และ **ไม่แสดง** fullscreen loading ตอน submit — ใช้แค่ปุ่ม `disabled` + ข้อความ "กำลังเข้าสู่ระบบ..."
 - อย่า `withLoading` ซ้อนกับ table `loading` ตอน fetch ครั้งแรก (table ใช้ `variant="page"` อยู่แล้ว) — ใช้ overlay สำหรับ action ที่ user กด (ลบ, logout)
 
 ### 4.4 จุดที่ใช้ loading อยู่แล้ว
@@ -165,7 +165,7 @@ await withLoading(async () => {
 | GET list ครั้งแรก | `DataTable` + `loading={true}` → `Loading variant="page"` |
 | Soft delete ใน *Main.tsx | `withLoading(..., "กำลังลบ...")` |
 | Logout | `withLoading` ใน `header.tsx` |
-| Login submit | `Loading variant="fullscreen"` ใน `loginMain.tsx` |
+| Login submit | ปุ่ม disabled + ข้อความ (ไม่มี overlay) |
 | AuthGuard รอ token | `Loading variant="fullscreen"` |
 
 ---
