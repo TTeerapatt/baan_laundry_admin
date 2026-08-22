@@ -10,8 +10,6 @@ import {
   ADMIN_PROFILE_KEY,
   ADMIN_TOKEN_KEY,
   clearAdminSession,
-  setStoredMenuAll,
-  setStoredPermissionMenu,
   type StoredMenuAll,
   type StoredPermissionMenu,
 } from "@/app/lib/adminStorage";
@@ -180,8 +178,7 @@ export default function LoginMain() {
       if (mePayload.admin) {
         localStorage.setItem(ADMIN_PROFILE_KEY, JSON.stringify(mePayload.admin));
       }
-      setStoredPermissionMenu(mePayload.menu);
-      setStoredMenuAll(menuAllPayload);
+      // permission_menu + menu_all โหลดใหม่ใน AdminSessionProvider (memory) หลังเข้าหน้า admin
 
       // Wait until success popup closes (timer bar finishes or user clicks OK), then redirect
       await popup.success(

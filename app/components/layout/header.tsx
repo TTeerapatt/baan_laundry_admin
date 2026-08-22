@@ -4,26 +4,24 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { FiLogOut } from "react-icons/fi";
 import {
-  getStoredMenuAll,
   clearAdminSession,
   getStoredAdmin,
-  type StoredMenuAll,
   type StoredAdmin,
 } from "@/app/lib/adminStorage";
 import { getNavLabelByPath, getTabCodeByPath } from "@/app/lib/navItems";
 import { popup } from "@/app/ui/popUp";
 import { useLoading } from "@/app/providers/LoadingProvider";
+import { useAdminSession } from "@/app/providers/AdminSessionProvider";
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { withLoading } = useLoading();
+  const { menuAll } = useAdminSession();
   const [admin, setAdmin] = useState<StoredAdmin | null>(null);
-  const [menuAll, setMenuAll] = useState<StoredMenuAll | null>(null);
 
   useEffect(() => {
     setAdmin(getStoredAdmin());
-    setMenuAll(getStoredMenuAll());
   }, []);
 
   const tabCode = getTabCodeByPath(pathname);

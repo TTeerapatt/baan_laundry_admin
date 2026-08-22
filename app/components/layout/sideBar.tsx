@@ -1,20 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MdLocalLaundryService } from "react-icons/md";
-import {
-  getStoredMenuAll,
-  getStoredPermissionMenu,
-  type StoredMenuLabel,
-  type StoredMenuTab,
+import type {
+  StoredMenuLabel,
+  StoredMenuTab,
 } from "@/app/lib/adminStorage";
 import {
   getTabHrefByCode,
   getTabIconByCode,
   NAV_ITEMS,
 } from "@/app/lib/navItems";
+import { useAdminSession } from "@/app/providers/AdminSessionProvider";
 
 type GroupedMenu = {
   label: StoredMenuLabel;
@@ -23,12 +22,10 @@ type GroupedMenu = {
 
 export default function SideBar() {
   const pathname = usePathname();
-  const [groups, setGroups] = useState<GroupedMenu[]>([]);
+  const { permissionMenu, menuAll } = useAdminSession();
 
-  useEffect(() => {
-    const permissionMenu = getStoredPermissionMenu();
-    const menuAll = getStoredMenuAll();
-    if (!menuAll) return;
+  const groups = useMemo(() => {
+    if (!menuAll) return [] as GroupedMenu[];
 
     const canViewTab = new Set<string>();
     for (const menu of permissionMenu) {
@@ -46,7 +43,7 @@ export default function SideBar() {
       .filter((tab) => tab.is_active)
       .sort((a, b) => a.sort_order - b.sort_order);
 
-    const nextGroups: GroupedMenu[] = labels
+    return labels
       .map((label) => {
         const allowedTabs = tabs.filter((tab) => {
           const tabCode = String(tab.code || "").trim().toLowerCase();
@@ -59,12 +56,9 @@ export default function SideBar() {
         return { label, tabs: allowedTabs };
       })
       .filter((group) => group.tabs.length > 0);
-
-    setGroups(nextGroups);
-  }, []);
+  }, [permissionMenu, menuAll]);
 
   const fallbackItems = useMemo(() => NAV_ITEMS, []);
-
   const hasDynamicMenu = groups.length > 0;
 
   return (

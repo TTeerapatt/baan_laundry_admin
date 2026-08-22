@@ -16,7 +16,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **ชื่อ:** `baan_laundry_admin` (Next.js App Router)
 - **Backend URL:** `NEXT_PUBLIC_BACKEND_URL` ใน `.env.local` (เช่น `http://localhost:3001/laundry/api/`)
 - **Auth:** JWT เก็บใน `localStorage` key `baan_laundry_token` — axios interceptor แนบ `Authorization: Bearer` อัตโนมัติ
-- **Permission UI:** หลัง login เก็บ menu + permissions ใน localStorage → sidebar แสดงเฉพาะ tab ที่มี `actions.view`
+- **Permission UI:** `AdminSessionProvider` โหลด `auth/me` + `admin-menu` เก็บใน memory → sidebar แสดงเฉพาะ tab ที่มี `actions.view` (ไม่เก็บใน localStorage)
 
 ### คำสั่งที่ใช้บ่อย
 
@@ -47,7 +47,8 @@ baan_laundry_admin/
     │       ├── header.tsx
     │       └── sideBar.tsx
     ├── providers/
-    │   └── LoadingProvider.tsx   # context + route loading
+    │   ├── LoadingProvider.tsx   # context + route loading
+    │   └── AdminSessionProvider.tsx  # permission_menu + menu_all ใน memory
     ├── hooks/
     │   └── AuthGuard.tsx
     ├── lib/
@@ -86,17 +87,19 @@ baan_laundry_admin/
 ```
 LoadingProvider
   └── AuthGuard (requireAuth)
-        ├── SideBar          ← dynamic menu จาก permission
-        ├── Header           ← title ตาม pathname + profile + logout
-        └── main (relative)
-              ├── {children} ← เนื้อหาแต่ละหน้า
-              └── LoadingOverlayHost  ← overlay loading ทับเฉพาะ main
+        └── AdminSessionProvider  ← getMe + getMenuAll → memory
+              ├── SideBar          ← dynamic menu จาก permission
+              ├── Header           ← title ตาม pathname + profile + logout
+              └── main (relative)
+                    ├── {children} ← เนื้อหาแต่ละหน้า
+                    └── LoadingOverlayHost  ← overlay loading ทับเฉพาะ main
 ```
 
 - **`AdminShell`:** `app/components/layout/AdminShell.tsx`
 - **`AuthGuard`:** redirect ไป `/login` ถ้าไม่มี token; ตอนรอใช้ `<Loading variant="fullscreen" />`
-- **`Header`:** พื้นขาว ไม่ใช่แถบน้ำเงินเต็มความกว้าง — น้ำเงินเป็น accent (icon box, avatar)
-- **`SideBar`:** อ่าน `baan_laundry_permission_menu` + `baan_laundry_menu_all` จาก localStorage
+- **`AdminSessionProvider`:** โหลดสิทธิ์เมนูครั้งเข้า admin shell; ถ้า fail → clear session + ไป `/login`
+- **`Header`:** ชื่อหน้าจาก `menuAll` ใน session + โปรไฟล์จาก localStorage
+- **`SideBar`:** อ่าน `permissionMenu` + `menuAll` จาก `useAdminSession()`
 
 ---
 
@@ -241,18 +244,26 @@ Flow 4 ขั้น + หน้า success:
 
 ---
 
-## 7) localStorage keys
+## 7) Session storage
+
+### localStorage (persist)
 
 | Key | เนื้อหา |
 |-----|---------|
 | `baan_laundry_token` | JWT |
 | `baan_laundry_admin` | โปรไฟล์ admin |
-| `baan_laundry_permission_menu` | menu + actions ของ user |
-| `baan_laundry_menu_all` | master labels/tabs (+ `tabs[].actions` จาก API) |
 
-Helper: `app/lib/adminStorage.ts` — `get/set/clear` แต่ละ key
+Helper: `app/lib/adminStorage.ts` — `getAdminToken`, `getStoredAdmin`, `clearAdminSession`  
+`clearAdminSession` ยังลบ legacy keys `baan_laundry_permission_menu` / `baan_laundry_menu_all` ถ้าค้างอยู่
 
-**หมายเหตุ `getMenuAll`:** response ของ `GET /admin-menu` คืน `labels`, `tabs` และแต่ละ tab มี `actions: [{ code, name, sort_order }]` จากตาราง `admin_menu_tab_action` — ใช้ตอนตั้งสิทธิ์สร้าง admin
+### Memory (`AdminSessionProvider`)
+
+| ข้อมูล | แหล่ง |
+|--------|--------|
+| `permissionMenu` | `GET auth/me` → `data.menu` |
+| `menuAll` | `GET admin-menu` → `data` (labels, tabs, `tabs[].actions`) |
+
+**หมายเหตุ `getMenuAll`:** แต่ละ tab มี `actions: [{ code, name, sort_order }]` จาก `admin_menu_tab_action` — ใช้ตอนตั้งสิทธิ์สร้าง admin
 
 ---
 
@@ -260,7 +271,7 @@ Helper: `app/lib/adminStorage.ts` — `get/set/clear` แต่ละ key
 
 - `app/lib/navItems.ts` — `TAB_CODE_TO_HREF` map tab code → path  
   เช่น `"list-types"` → `/list-types`, `"service-types"` → `/service-types`
-- Sidebar ใช้ menu จาก API; fallback `NAV_ITEMS` ถ้ายังไม่มี menu ใน storage
+- Sidebar ใช้ menu จาก `AdminSessionProvider`; fallback `NAV_ITEMS` ถ้ายังไม่มี menu
 - หลังเพิ่ม tab ใหม่ใน backend ต้อง: migration menu + อัป `TAB_CODE_TO_HREF` + สร้างหน้า admin
 
 ---
