@@ -1,5 +1,6 @@
 import type { IconType } from "react-icons";
 import {
+  MdCategory,
   MdDashboard,
   MdLocalLaundryService,
   MdPeople,
@@ -20,6 +21,7 @@ export const TAB_CODE_TO_HREF: Record<string, string> = {
   orders: "/orders",
   customers: "/customers",
   "service-types": "/service-types",
+  "list-types": "/list-types",
   "list-prices": "/list-prices",
   admins: "/admins",
   order_log: "/order-log",
@@ -31,6 +33,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/orders", label: "ออเดอร์", icon: MdReceiptLong },
   { href: "/customers", label: "ลูกค้า", icon: MdPeople },
   { href: "/service-types", label: "ประเภทบริการ", icon: MdLocalLaundryService },
+  { href: "/list-types", label: "ประเภทรายการ", icon: MdCategory },
   { href: "/list-prices", label: "ราคา", icon: MdPriceChange },
   { href: "/admins", label: "ผู้ดูแลระบบ", icon: MdAdminPanelSettings },
 ];
@@ -58,6 +61,7 @@ export function getTabIconByCode(tabCode: string): IconType {
   if (key === "orders" || key === "order_log") return MdReceiptLong;
   if (key === "customers") return MdPeople;
   if (key === "service-types") return MdLocalLaundryService;
+  if (key === "list-types") return MdCategory;
   if (key === "list-prices") return MdPriceChange;
   if (key === "admins" || key === "admin_log") return MdAdminPanelSettings;
   return MdDashboard;
