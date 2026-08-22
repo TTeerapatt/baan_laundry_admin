@@ -1,61 +1,51 @@
 import apiServices from "../apiServices";
 import { validateOrThrowApiResponse } from "../response-validator";
 
-export type UserItem = {
+export type ServiceTypeItem = {
   id: number;
-  phone: string;
+  code: string;
   name: string;
-  note: string | null;
   created_at: string;
   updated_at: string;
 };
 
-export type UserListQuery = {
-  phone?: string;
-  name?: string;
-  q?: string;
-};
-
-export type CreateUserPayload = {
-  phone: string;
+export type CreateServiceTypePayload = {
+  code: string;
   name: string;
-  note?: string;
 };
 
-export type UpdateUserPayload = {
-  phone?: string;
+export type UpdateServiceTypePayload = {
+  code?: string;
   name?: string;
-  note?: string | null;
 };
 
-const userAPI = {
-  getUserAll(params?: UserListQuery) {
+const serviceTypeAPI = {
+  getServiceTypeAll() {
     return apiServices
-      .get(`users`, {
+      .get(`service-type`, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        params,
       })
       .then((res) => validateOrThrowApiResponse(res))
       .catch((err) => {
-        console.log("Error getUserAll:", err);
+        console.log("Error getServiceTypeAll:", err);
         return {
           status: "failed",
           errMessage:
             err?.message ||
             err?.errMessage ||
             (typeof err === "string" ? err : null) ||
-            "การดึงข้อมูลลูกค้าล้มเหลว",
+            "การดึงข้อมูลประเภทบริการล้มเหลว",
           error: err,
         };
       });
   },
 
-  getUserById(id: string | number) {
+  getServiceTypeById(id: string | number) {
     return apiServices
-      .get(`users/${id}`, {
+      .get(`service-type/${id}`, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -63,22 +53,22 @@ const userAPI = {
       })
       .then((res) => validateOrThrowApiResponse(res))
       .catch((err) => {
-        console.log("Error getUserById:", err);
+        console.log("Error getServiceTypeById:", err);
         return {
           status: "failed",
           errMessage:
             err?.message ||
             err?.errMessage ||
             (typeof err === "string" ? err : null) ||
-            "การดึงข้อมูลลูกค้าล้มเหลว",
+            "การดึงข้อมูลประเภทบริการล้มเหลว",
           error: err,
         };
       });
   },
 
-  createUser(payload: CreateUserPayload) {
+  createServiceType(payload: CreateServiceTypePayload) {
     return apiServices
-      .post(`users`, payload, {
+      .post(`service-type`, payload, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -86,22 +76,22 @@ const userAPI = {
       })
       .then((res) => validateOrThrowApiResponse(res))
       .catch((err) => {
-        console.log("Error createUser:", err);
+        console.log("Error createServiceType:", err);
         return {
           status: "failed",
           errMessage:
             err?.message ||
             err?.errMessage ||
             (typeof err === "string" ? err : null) ||
-            "การสร้างลูกค้าล้มเหลว",
+            "การสร้างประเภทบริการล้มเหลว",
           error: err,
         };
       });
   },
 
-  updateUser(id: string | number, payload: UpdateUserPayload) {
+  updateServiceType(id: string | number, payload: UpdateServiceTypePayload) {
     return apiServices
-      .put(`users/${id}`, payload, {
+      .put(`service-type/${id}`, payload, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -109,22 +99,22 @@ const userAPI = {
       })
       .then((res) => validateOrThrowApiResponse(res))
       .catch((err) => {
-        console.log("Error updateUser:", err);
+        console.log("Error updateServiceType:", err);
         return {
           status: "failed",
           errMessage:
             err?.message ||
             err?.errMessage ||
             (typeof err === "string" ? err : null) ||
-            "การแก้ไขลูกค้าล้มเหลว",
+            "การแก้ไขประเภทบริการล้มเหลว",
           error: err,
         };
       });
   },
 
-  softDeleteUser(id: string | number) {
+  softDeleteServiceType(id: string | number) {
     return apiServices
-      .delete(`users/${id}`, {
+      .delete(`service-type/${id}`, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -132,22 +122,22 @@ const userAPI = {
       })
       .then((res) => validateOrThrowApiResponse(res))
       .catch((err) => {
-        console.log("Error softDeleteUser:", err);
+        console.log("Error softDeleteServiceType:", err);
         return {
           status: "failed",
           errMessage:
             err?.message ||
             err?.errMessage ||
             (typeof err === "string" ? err : null) ||
-            "การลบลูกค้าล้มเหลว",
+            "การลบประเภทบริการล้มเหลว",
           error: err,
         };
       });
   },
 
-  hardDeleteUser(id: string | number) {
+  hardDeleteServiceType(id: string | number) {
     return apiServices
-      .delete(`users/${id}/hard`, {
+      .delete(`service-type/${id}/hard`, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -155,18 +145,18 @@ const userAPI = {
       })
       .then((res) => validateOrThrowApiResponse(res))
       .catch((err) => {
-        console.log("Error hardDeleteUser:", err);
+        console.log("Error hardDeleteServiceType:", err);
         return {
           status: "failed",
           errMessage:
             err?.message ||
             err?.errMessage ||
             (typeof err === "string" ? err : null) ||
-            "การลบลูกค้าถาวรล้มเหลว",
+            "การลบประเภทบริการถาวรล้มเหลว",
           error: err,
         };
       });
   },
 };
 
-export default userAPI;
+export default serviceTypeAPI;

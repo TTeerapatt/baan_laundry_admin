@@ -1,61 +1,54 @@
 import apiServices from "../apiServices";
 import { validateOrThrowApiResponse } from "../response-validator";
 
-export type UserItem = {
+export type ListPriceItem = {
   id: number;
-  phone: string;
-  name: string;
-  note: string | null;
+  service_type_id: number;
+  list_type_id: number;
+  unit_price: string;
   created_at: string;
   updated_at: string;
 };
 
-export type UserListQuery = {
-  phone?: string;
-  name?: string;
-  q?: string;
+export type CreateListPricePayload = {
+  service_type_id: number;
+  list_type_id: number;
+  unit_price: number;
 };
 
-export type CreateUserPayload = {
-  phone: string;
-  name: string;
-  note?: string;
+export type UpdateListPricePayload = {
+  service_type_id?: number;
+  list_type_id?: number;
+  unit_price?: number;
 };
 
-export type UpdateUserPayload = {
-  phone?: string;
-  name?: string;
-  note?: string | null;
-};
-
-const userAPI = {
-  getUserAll(params?: UserListQuery) {
+const listPriceAPI = {
+  getListPriceAll() {
     return apiServices
-      .get(`users`, {
+      .get(`list-price`, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        params,
       })
       .then((res) => validateOrThrowApiResponse(res))
       .catch((err) => {
-        console.log("Error getUserAll:", err);
+        console.log("Error getListPriceAll:", err);
         return {
           status: "failed",
           errMessage:
             err?.message ||
             err?.errMessage ||
             (typeof err === "string" ? err : null) ||
-            "การดึงข้อมูลลูกค้าล้มเหลว",
+            "การดึงข้อมูลราคาล้มเหลว",
           error: err,
         };
       });
   },
 
-  getUserById(id: string | number) {
+  getListPriceById(id: string | number) {
     return apiServices
-      .get(`users/${id}`, {
+      .get(`list-price/${id}`, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -63,22 +56,22 @@ const userAPI = {
       })
       .then((res) => validateOrThrowApiResponse(res))
       .catch((err) => {
-        console.log("Error getUserById:", err);
+        console.log("Error getListPriceById:", err);
         return {
           status: "failed",
           errMessage:
             err?.message ||
             err?.errMessage ||
             (typeof err === "string" ? err : null) ||
-            "การดึงข้อมูลลูกค้าล้มเหลว",
+            "การดึงข้อมูลราคาล้มเหลว",
           error: err,
         };
       });
   },
 
-  createUser(payload: CreateUserPayload) {
+  createListPrice(payload: CreateListPricePayload) {
     return apiServices
-      .post(`users`, payload, {
+      .post(`list-price`, payload, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -86,22 +79,22 @@ const userAPI = {
       })
       .then((res) => validateOrThrowApiResponse(res))
       .catch((err) => {
-        console.log("Error createUser:", err);
+        console.log("Error createListPrice:", err);
         return {
           status: "failed",
           errMessage:
             err?.message ||
             err?.errMessage ||
             (typeof err === "string" ? err : null) ||
-            "การสร้างลูกค้าล้มเหลว",
+            "การสร้างราคาล้มเหลว",
           error: err,
         };
       });
   },
 
-  updateUser(id: string | number, payload: UpdateUserPayload) {
+  updateListPrice(id: string | number, payload: UpdateListPricePayload) {
     return apiServices
-      .put(`users/${id}`, payload, {
+      .put(`list-price/${id}`, payload, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -109,22 +102,22 @@ const userAPI = {
       })
       .then((res) => validateOrThrowApiResponse(res))
       .catch((err) => {
-        console.log("Error updateUser:", err);
+        console.log("Error updateListPrice:", err);
         return {
           status: "failed",
           errMessage:
             err?.message ||
             err?.errMessage ||
             (typeof err === "string" ? err : null) ||
-            "การแก้ไขลูกค้าล้มเหลว",
+            "การแก้ไขราคาล้มเหลว",
           error: err,
         };
       });
   },
 
-  softDeleteUser(id: string | number) {
+  softDeleteListPrice(id: string | number) {
     return apiServices
-      .delete(`users/${id}`, {
+      .delete(`list-price/${id}`, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -132,22 +125,22 @@ const userAPI = {
       })
       .then((res) => validateOrThrowApiResponse(res))
       .catch((err) => {
-        console.log("Error softDeleteUser:", err);
+        console.log("Error softDeleteListPrice:", err);
         return {
           status: "failed",
           errMessage:
             err?.message ||
             err?.errMessage ||
             (typeof err === "string" ? err : null) ||
-            "การลบลูกค้าล้มเหลว",
+            "การลบราคาล้มเหลว",
           error: err,
         };
       });
   },
 
-  hardDeleteUser(id: string | number) {
+  hardDeleteListPrice(id: string | number) {
     return apiServices
-      .delete(`users/${id}/hard`, {
+      .delete(`list-price/${id}/hard`, {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -155,18 +148,18 @@ const userAPI = {
       })
       .then((res) => validateOrThrowApiResponse(res))
       .catch((err) => {
-        console.log("Error hardDeleteUser:", err);
+        console.log("Error hardDeleteListPrice:", err);
         return {
           status: "failed",
           errMessage:
             err?.message ||
             err?.errMessage ||
             (typeof err === "string" ? err : null) ||
-            "การลบลูกค้าถาวรล้มเหลว",
+            "การลบราคาถาวรล้มเหลว",
           error: err,
         };
       });
   },
 };
 
-export default userAPI;
+export default listPriceAPI;
