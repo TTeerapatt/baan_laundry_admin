@@ -3,24 +3,32 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { FiLogOut } from "react-icons/fi";
-import { getNavLabelByPath } from "@/app/lib/navItems";
 import {
+  getStoredMenuAll,
   clearAdminSession,
   getStoredAdmin,
+  type StoredMenuAll,
   type StoredAdmin,
 } from "@/app/lib/adminStorage";
+import { getNavLabelByPath, getTabCodeByPath } from "@/app/lib/navItems";
 import { popup } from "@/app/ui/popUp";
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const [admin, setAdmin] = useState<StoredAdmin | null>(null);
+  const [menuAll, setMenuAll] = useState<StoredMenuAll | null>(null);
 
   useEffect(() => {
     setAdmin(getStoredAdmin());
+    setMenuAll(getStoredMenuAll());
   }, []);
 
-  const title = getNavLabelByPath(pathname);
+  const tabCode = getTabCodeByPath(pathname);
+  const title =
+    (tabCode &&
+      menuAll?.tabs.find((tab) => tab.code === tabCode)?.name?.trim()) ||
+    getNavLabelByPath(pathname);
   const displayName = admin?.display_name?.trim() || "Admin";
   const email = admin?.email?.trim() || "";
   const initials = displayName

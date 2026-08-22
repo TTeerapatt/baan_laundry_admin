@@ -5,8 +5,17 @@ import { useRouter } from "next/navigation";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { MdLocalLaundryService } from "react-icons/md";
-import adminAPI from "@/app/services/admin/adminAPI";
-import { ADMIN_PROFILE_KEY, ADMIN_TOKEN_KEY } from "@/app/lib/adminStorage";
+import authAPI from "@/app/services/auth/authAPI";
+import menuAPI from "@/app/services/menu/menuAPI";
+import {
+  ADMIN_PROFILE_KEY,
+  ADMIN_TOKEN_KEY,
+  clearAdminSession,
+  setStoredMenuAll,
+  setStoredPermissionMenu,
+  type StoredMenuAll,
+  type StoredPermissionMenu,
+} from "@/app/lib/adminStorage";
 import { popup } from "@/app/ui/popUp";
 
 type LoginApiResult =
@@ -23,6 +32,39 @@ type LoginApiResult =
           updated_at?: string;
         };
       };
+      status?: string;
+      errMessage?: string;
+      message?: string;
+    }
+  | null
+  | undefined;
+
+type AuthMeApiResult =
+  | {
+      success?: boolean;
+      data?: {
+        admin?: {
+          id: string | number;
+          email: string;
+          display_name: string;
+          role: string;
+          created_at?: string;
+          updated_at?: string;
+          last_login_at?: string | null;
+        };
+        menu?: StoredPermissionMenu[];
+      };
+      status?: string;
+      errMessage?: string;
+      message?: string;
+    }
+  | null
+  | undefined;
+
+type MenuAllApiResult =
+  | {
+      success?: boolean;
+      data?: StoredMenuAll;
       status?: string;
       errMessage?: string;
       message?: string;
@@ -50,6 +92,12 @@ function getErrorMessage(result: LoginApiResult, fallback: string): string {
   return fallback;
 }
 
+function isFailedResult(
+  result: { status?: string; success?: boolean } | null | undefined
+): boolean {
+  return !result || result.status === "failed" || result.success === false;
+}
+
 export default function LoginMain() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -72,7 +120,7 @@ export default function LoginMain() {
     setIsSubmitting(true);
 
     try {
-      const result = (await adminAPI.loginAdmin(
+      const result = (await authAPI.login(
         trimmedEmail,
         password
       )) as LoginApiResult;
@@ -102,6 +150,39 @@ export default function LoginMain() {
       if (admin) {
         localStorage.setItem(ADMIN_PROFILE_KEY, JSON.stringify(admin));
       }
+
+      // Fetch permissions + menu master right after login for role-based UI rendering.
+      const [meResult, menuResult] = (await Promise.all([
+        authAPI.getMe(),
+        menuAPI.getMenuAll(),
+      ])) as [AuthMeApiResult, MenuAllApiResult];
+
+      if (isFailedResult(meResult) || isFailedResult(menuResult)) {
+        const message = getErrorMessage(
+          meResult as LoginApiResult,
+          "ไม่สามารถดึงข้อมูลสิทธิ์การใช้งานได้"
+        );
+        clearAdminSession();
+        await popup.error("เข้าสู่ระบบไม่สำเร็จ", localizeLoginError(message));
+        return;
+      }
+
+      const mePayload = meResult?.data;
+      const menuAllPayload = menuResult?.data;
+      if (!mePayload?.menu || !menuAllPayload?.labels || !menuAllPayload?.tabs) {
+        clearAdminSession();
+        await popup.error(
+          "เข้าสู่ระบบไม่สำเร็จ",
+          "ข้อมูลสิทธิ์ผู้ใช้งานไม่ครบถ้วนจากเซิร์ฟเวอร์"
+        );
+        return;
+      }
+
+      if (mePayload.admin) {
+        localStorage.setItem(ADMIN_PROFILE_KEY, JSON.stringify(mePayload.admin));
+      }
+      setStoredPermissionMenu(mePayload.menu);
+      setStoredMenuAll(menuAllPayload);
 
       // Wait until success popup closes (timer bar finishes or user clicks OK), then redirect
       await popup.success(

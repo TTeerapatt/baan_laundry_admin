@@ -14,6 +14,18 @@ export type NavItem = {
   icon: IconType;
 };
 
+export const TAB_CODE_TO_HREF: Record<string, string> = {
+  overview: "/",
+  bi: "/bi",
+  orders: "/orders",
+  customers: "/customers",
+  "service-types": "/service-types",
+  "list-prices": "/list-prices",
+  admins: "/admins",
+  order_log: "/order-log",
+  admin_log: "/admin-log",
+};
+
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "แดชบอร์ด", icon: MdDashboard },
   { href: "/orders", label: "ออเดอร์", icon: MdReceiptLong },
@@ -22,6 +34,34 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/list-prices", label: "ราคา", icon: MdPriceChange },
   { href: "/admins", label: "ผู้ดูแลระบบ", icon: MdAdminPanelSettings },
 ];
+
+export function getTabHrefByCode(tabCode: string): string | null {
+  const key = String(tabCode || "").trim().toLowerCase();
+  return TAB_CODE_TO_HREF[key] ?? null;
+}
+
+export function getTabCodeByPath(pathname: string): string | null {
+  const path = String(pathname || "").trim();
+  const entries = Object.entries(TAB_CODE_TO_HREF);
+  const exact = entries.find(([, href]) => href === path);
+  if (exact) return exact[0];
+
+  const nested = entries.find(
+    ([, href]) => href !== "/" && path.startsWith(`${href}/`)
+  );
+  return nested?.[0] ?? null;
+}
+
+export function getTabIconByCode(tabCode: string): IconType {
+  const key = String(tabCode || "").trim().toLowerCase();
+  if (key === "overview" || key === "bi") return MdDashboard;
+  if (key === "orders" || key === "order_log") return MdReceiptLong;
+  if (key === "customers") return MdPeople;
+  if (key === "service-types") return MdLocalLaundryService;
+  if (key === "list-prices") return MdPriceChange;
+  if (key === "admins" || key === "admin_log") return MdAdminPanelSettings;
+  return MdDashboard;
+}
 
 export function getNavLabelByPath(pathname: string): string {
   const exact = NAV_ITEMS.find((item) => item.href === pathname);
