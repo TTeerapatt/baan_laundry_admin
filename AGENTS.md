@@ -191,24 +191,25 @@ await withLoading(async () => {
 - `useEffect` → เรียก `getXxxAll()` ตอน mount
 - filter client-side ด้วย `useMemo`
 - delete → `popup.confirmDelete` → `withLoading` → `softDeleteXxx` → refresh
-- add admin → เปิด `AdminCreateModal` (multi-step) ไม่ใช่ placeholder
-- edit → placeholder `popup.info` (ยังไม่มี form)
+- add admin → เปิด `AdminCreateModal` (multi-step create)
+- edit admin → เปิด `AdminCreateModal` โหมดแก้ไข (`adminId`) โหลด `getAdminByIdPermission`
 
-### Admin Create Modal (เพิ่มผู้ดูแลระบบ)
+### Admin Create / Edit Modal
 
 ไฟล์: `app/(admin)/admins/components/adminCreateModal.tsx`
 
-Flow 4 ขั้น + หน้า success:
+Flow 4 ขั้น (create / edit ใช้ modal เดียวกัน):
 
-1. **เลือกบทบาท** — `owner` | `admin` | `staff` (ตาม backend `ALLOWED_ROLES`)
-2. **ข้อมูลผู้ใช้งาน** — ฟิลด์ตาม API create: `display_name`, `email`, `password` (+ confirm password ใน UI)
-3. **ขอบเขตสิทธิ์** — ตารางติ๊ก View/Add/Edit/Delete/Export จาก `menuAPI.getMenuAll()`
-   - โครงสร้างหมวด = `labels` + `tabs`
-   - actions ต่อ tab มาจาก backend (`tabs[].actions`) ที่ join จาก `admin_menu_tab_action`
-   - owner: ติ๊กครบและ disabled (ไม่ส่ง `permissions` ตอน create เพราะ owner bypass)
-4. **ยืนยันการสร้าง** — สรุปข้อมูล + ตารางสิทธิ์ → กดยืนยัน → `popup.confirm` → `adminAPI.createAdmin` → หน้า success (ไม่มีส่งเมล)
+1. **เลือกบทบาท** — `owner` | `admin` | `staff`
+2. **ข้อมูลผู้ใช้งาน** — `display_name`, `email`, `password`  
+   - create: รหัสผ่านบังคับ  
+   - edit: รหัสผ่านใหม่ไม่บังคับ (ว่าง = ไม่เปลี่ยน)
+3. **ขอบเขตสิทธิ์** — จาก `menuAPI.getMenuAll()`  
+   - edit: ติ๊กตาม `GET admins/:id/permissions` (`data.menu`)
+   - owner: ติ๊กครบ + disabled (ไม่ส่ง `permissions`)
+4. **ยืนยัน** → `createAdmin` หรือ `updateAdmin` → ปิด modal → `popup.success`
 
-เปิดจากปุ่ม `onAdd` ใน `adminFilter` ผ่าน state `createOpen` ใน `adminMain`
+เปิดจาก `adminMain`: `createOpen` (เพิ่ม) หรือ `editingAdminId` (แก้ไข)
 
 ### Table.tsx
 

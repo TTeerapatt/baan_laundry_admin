@@ -14,7 +14,9 @@ import {
 import { MdAdminPanelSettings, MdManageAccounts, MdBadge } from "react-icons/md";
 import adminAPI, {
   type AdminPermissionInput,
+  type AdminPermissionMenu,
   type CreateAdminPayload,
+  type UpdateAdminPayload,
 } from "@/app/services/admin/adminAPI";
 import menuAPI, {
   type MenuAllResponse,
@@ -28,20 +30,25 @@ import { useLoading } from "@/app/providers/LoadingProvider";
 
 type AdminCreateModalProps = {
   open: boolean;
+  /** ถ้ามีค่า = โหมดแก้ไข โหลดข้อมูลจาก `GET admins/:id/permissions` */
+  adminId?: number | null;
   onClose: () => void;
   onCreated: () => void;
+  onUpdated?: () => void;
 };
 
 type AdminRole = "owner" | "admin" | "staff";
 
 type PermissionMap = Record<string, Record<string, boolean>>;
 
-const STEPS = [
-  { id: 1, label: "เลือกบทบาท" },
-  { id: 2, label: "ข้อมูลผู้ใช้งาน" },
-  { id: 3, label: "ขอบเขตสิทธิ์" },
-  { id: 4, label: "ยืนยันการสร้าง" },
-] as const;
+function getSteps(isEdit: boolean) {
+  return [
+    { id: 1, label: "เลือกบทบาท" },
+    { id: 2, label: "ข้อมูลผู้ใช้งาน" },
+    { id: 3, label: "ขอบเขตสิทธิ์" },
+    { id: 4, label: isEdit ? "ยืนยันการแก้ไข" : "ยืนยันการสร้าง" },
+  ] as const;
+}
 
 const ROLE_OPTIONS: Array<{
   value: AdminRole;
@@ -135,13 +142,47 @@ function permissionsToPayload(map: PermissionMap): AdminPermissionInput[] {
     .filter((item) => item.action_codes.length > 0);
 }
 
-function Stepper({ currentStep }: { currentStep: number }) {
+function permissionsFromAdminMenu(
+  tabs: MenuTab[],
+  menu: AdminPermissionMenu[],
+  role: AdminRole
+): PermissionMap {
+  if (role === "owner") {
+    return buildDefaultPermissions(tabs, "owner");
+  }
+
+  const next = buildDefaultPermissions(tabs, "staff");
+  for (const tab of tabs) {
+    for (const action of tab.actions ?? []) {
+      next[tab.code][action.code] = false;
+    }
+  }
+
+  for (const group of menu) {
+    for (const tab of group.tabs || []) {
+      if (!next[tab.code]) next[tab.code] = {};
+      for (const [actionCode, allowed] of Object.entries(tab.actions || {})) {
+        next[tab.code][actionCode] = Boolean(allowed);
+      }
+    }
+  }
+  return next;
+}
+
+function Stepper({
+  currentStep,
+  isEdit,
+}: {
+  currentStep: number;
+  isEdit: boolean;
+}) {
+  const steps = getSteps(isEdit);
   return (
     <div className="mb-8 flex items-start justify-between gap-2 px-2">
-      {STEPS.map((step, index) => {
+      {steps.map((step, index) => {
         const isDone = currentStep > step.id;
         const isActive = currentStep === step.id;
-        const isLast = index === STEPS.length - 1;
+        const isLast = index === steps.length - 1;
 
         return (
           <div key={step.id} className="relative flex flex-1 flex-col items-center">
@@ -179,10 +220,13 @@ function Stepper({ currentStep }: { currentStep: number }) {
 
 export default function AdminCreateModal({
   open,
+  adminId = null,
   onClose,
   onCreated,
+  onUpdated,
 }: AdminCreateModalProps) {
   const { withLoading } = useLoading();
+  const isEdit = adminId != null;
   const [step, setStep] = useState(1);
   const [role, setRole] = useState<AdminRole | "">("");
   const [form, setForm] = useState(emptyForm);
@@ -192,6 +236,7 @@ export default function AdminCreateModal({
   const [tabs, setTabs] = useState<MenuTab[]>([]);
   const [permissions, setPermissions] = useState<PermissionMap>({});
   const [menuLoading, setMenuLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<FormField, boolean>>
   >({});
@@ -204,6 +249,7 @@ export default function AdminCreateModal({
     setShowConfirmPassword(false);
     setPermissions({});
     setFieldErrors({});
+    setDetailLoading(false);
   }, []);
 
   const clearFieldError = (field: FormField) => {
@@ -251,24 +297,54 @@ export default function AdminCreateModal({
     resetState();
 
     let cancelled = false;
-    const loadMenu = async () => {
+    const loadData = async () => {
       setMenuLoading(true);
+      if (adminId != null) setDetailLoading(true);
+
       try {
-        const result = (await menuAPI.getMenuAll()) as {
+        const menuPromise = menuAPI.getMenuAll() as Promise<{
           success?: boolean;
           status?: string;
           data?: MenuAllResponse;
           errMessage?: string;
           message?: string;
-        };
+        }>;
+
+        const detailPromise =
+          adminId != null
+            ? (adminAPI.getAdminByIdPermission(adminId) as Promise<{
+                success?: boolean;
+                status?: string;
+                data?: {
+                  admin?: {
+                    id: number;
+                    email: string;
+                    display_name: string;
+                    role: string;
+                  };
+                  menu?: AdminPermissionMenu[];
+                };
+                errMessage?: string;
+                message?: string;
+              }>)
+            : Promise.resolve(null);
+
+        const [menuResult, detailResult] = await Promise.all([
+          menuPromise,
+          detailPromise,
+        ]);
 
         if (cancelled) return;
 
-        if (!result || result.status === "failed" || result.success === false) {
+        if (
+          !menuResult ||
+          menuResult.status === "failed" ||
+          menuResult.success === false
+        ) {
           await popup.error(
             "เกิดข้อผิดพลาด",
-            result?.errMessage ||
-              result?.message ||
+            menuResult?.errMessage ||
+              menuResult?.message ||
               "ไม่สามารถดึงข้อมูลเมนูสิทธิ์ได้"
           );
           setLabels([]);
@@ -276,30 +352,87 @@ export default function AdminCreateModal({
           return;
         }
 
-        const nextLabels = Array.isArray(result.data?.labels)
-          ? result.data.labels.filter((item) => item.is_active)
+        const nextLabels = Array.isArray(menuResult.data?.labels)
+          ? menuResult.data.labels.filter((item) => item.is_active)
           : [];
-        const nextTabs = Array.isArray(result.data?.tabs)
-          ? result.data.tabs.filter((item) => item.is_active)
+        const nextTabs = Array.isArray(menuResult.data?.tabs)
+          ? menuResult.data.tabs.filter((item) => item.is_active)
           : [];
         setLabels(nextLabels);
         setTabs(nextTabs);
+
+        if (adminId == null) return;
+
+        if (
+          !detailResult ||
+          detailResult.status === "failed" ||
+          detailResult.success === false ||
+          !detailResult.data?.admin
+        ) {
+          await popup.error(
+            "เกิดข้อผิดพลาด",
+            detailResult?.errMessage ||
+              detailResult?.message ||
+              "ไม่สามารถดึงข้อมูลผู้ดูแลระบบได้"
+          );
+          onClose();
+          return;
+        }
+
+        const admin = detailResult.data.admin;
+        const nextRole = String(admin.role || "")
+          .trim()
+          .toLowerCase() as AdminRole;
+        const validRole = ROLE_OPTIONS.some((item) => item.value === nextRole)
+          ? nextRole
+          : "";
+
+        setRole(validRole);
+        setForm({
+          display_name: String(admin.display_name || ""),
+          email: String(admin.email || ""),
+          password: "",
+          confirmPassword: "",
+        });
+
+        if (validRole) {
+          setPermissions(
+            permissionsFromAdminMenu(
+              nextTabs,
+              Array.isArray(detailResult.data.menu)
+                ? detailResult.data.menu
+                : [],
+              validRole
+            )
+          );
+        }
       } catch {
         if (!cancelled) {
-          await popup.error("เกิดข้อผิดพลาด", "ไม่สามารถดึงข้อมูลเมนูสิทธิ์ได้");
+          await popup.error(
+            "เกิดข้อผิดพลาด",
+            adminId != null
+              ? "ไม่สามารถดึงข้อมูลผู้ดูแลระบบได้"
+              : "ไม่สามารถดึงข้อมูลเมนูสิทธิ์ได้"
+          );
           setLabels([]);
           setTabs([]);
+          if (adminId != null) onClose();
         }
       } finally {
-        if (!cancelled) setMenuLoading(false);
+        if (!cancelled) {
+          setMenuLoading(false);
+          setDetailLoading(false);
+        }
       }
     };
 
-    void loadMenu();
+    void loadData();
     return () => {
       cancelled = true;
     };
-  }, [open, resetState]);
+    // onClose omitted — parent often passes an inline callback
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, adminId, resetState]);
 
   const groupedTabs = useMemo(() => {
     const sortedLabels = [...labels].sort(
@@ -328,8 +461,12 @@ export default function AdminCreateModal({
   }, [tabs]);
 
   const handleSelectRole = (nextRole: AdminRole) => {
-    setRole(nextRole);
-    setPermissions(buildDefaultPermissions(tabs, nextRole));
+    setRole((prev) => {
+      if (prev !== nextRole) {
+        setPermissions(buildDefaultPermissions(tabs, nextRole));
+      }
+      return nextRole;
+    });
   };
 
   useEffect(() => {
@@ -366,19 +503,26 @@ export default function AdminCreateModal({
       await popup.warning("ข้อมูลไม่ถูกต้อง", "กรุณากรอกอีเมลให้ถูกต้อง");
       return false;
     }
-    if (!evaluatePasswordPolicy(password).requiredPassed) {
-      markFieldError("password");
-      await popup.warning(
-        "รหัสผ่านไม่ผ่านเงื่อนไข",
-        "กรุณาตั้งรหัสผ่านตามเงื่อนไขที่กำหนด"
-      );
-      return false;
+
+    const changingPassword = Boolean(password || confirmPassword);
+    if (!isEdit || changingPassword) {
+      if (!evaluatePasswordPolicy(password).requiredPassed) {
+        markFieldError("password");
+        await popup.warning(
+          "รหัสผ่านไม่ผ่านเงื่อนไข",
+          isEdit
+            ? "ถ้าต้องการเปลี่ยนรหัสผ่าน กรุณาตั้งตามเงื่อนไขที่กำหนด"
+            : "กรุณาตั้งรหัสผ่านตามเงื่อนไขที่กำหนด"
+        );
+        return false;
+      }
+      if (password !== confirmPassword) {
+        setFieldErrors({ confirmPassword: true, password: true });
+        await popup.warning("ข้อมูลไม่ถูกต้อง", "รหัสผ่านยืนยันไม่ตรงกัน");
+        return false;
+      }
     }
-    if (password !== confirmPassword) {
-      setFieldErrors({ confirmPassword: true, password: true });
-      await popup.warning("ข้อมูลไม่ถูกต้อง", "รหัสผ่านยืนยันไม่ตรงกัน");
-      return false;
-    }
+
     setFieldErrors({});
     return true;
   };
@@ -409,29 +553,66 @@ export default function AdminCreateModal({
     }
   };
 
-  const handleConfirmCreate = async () => {
+  const handleConfirmSave = async () => {
     if (!role) return;
 
     const confirmed = await popup.confirm({
-      title: "ยืนยันการสร้างผู้ดูแลระบบ?",
-      text: `ต้องการสร้างบัญชี ${form.display_name.trim()} (${form.email.trim()}) ในบทบาท ${role} ใช่หรือไม่`,
+      title: isEdit
+        ? "ยืนยันการแก้ไขผู้ดูแลระบบ?"
+        : "ยืนยันการสร้างผู้ดูแลระบบ?",
+      text: isEdit
+        ? `ต้องการบันทึกการแก้ไขบัญชี ${form.display_name.trim()} (${form.email.trim()}) ใช่หรือไม่`
+        : `ต้องการสร้างบัญชี ${form.display_name.trim()} (${form.email.trim()}) ในบทบาท ${role} ใช่หรือไม่`,
       confirmText: "ตกลง",
       cancelText: "ยกเลิก",
     });
     if (!confirmed) return;
 
-    const payload: CreateAdminPayload = {
-      email: form.email.trim(),
-      password: form.password.trim(),
-      display_name: form.display_name.trim(),
-      role,
-      permissions:
-        role === "owner" ? undefined : permissionsToPayload(permissions),
-    };
-
-    let created = false;
+    const password = form.password.trim();
+    let saved = false;
 
     await withLoading(async () => {
+      if (isEdit && adminId != null) {
+        const payload: UpdateAdminPayload = {
+          email: form.email.trim(),
+          display_name: form.display_name.trim(),
+          role,
+          permissions:
+            role === "owner" ? undefined : permissionsToPayload(permissions),
+        };
+        if (password) {
+          payload.password = password;
+        }
+
+        const result = (await adminAPI.updateAdmin(adminId, payload)) as {
+          success?: boolean;
+          status?: string;
+          errMessage?: string;
+          message?: string;
+        };
+
+        if (!result || result.status === "failed" || result.success === false) {
+          await popup.error(
+            "แก้ไขไม่สำเร็จ",
+            result?.errMessage ||
+              result?.message ||
+              "ไม่สามารถแก้ไขผู้ดูแลระบบได้"
+          );
+          return;
+        }
+        saved = true;
+        return;
+      }
+
+      const payload: CreateAdminPayload = {
+        email: form.email.trim(),
+        password,
+        display_name: form.display_name.trim(),
+        role,
+        permissions:
+          role === "owner" ? undefined : permissionsToPayload(permissions),
+      };
+
       const result = (await adminAPI.createAdmin(payload)) as {
         success?: boolean;
         status?: string;
@@ -449,12 +630,21 @@ export default function AdminCreateModal({
         return;
       }
 
-      created = true;
-    }, "กำลังสร้างผู้ดูแลระบบ...");
+      saved = true;
+    }, isEdit ? "กำลังบันทึกการแก้ไข..." : "กำลังสร้างผู้ดูแลระบบ...");
 
-    if (!created) return;
+    if (!saved) return;
 
     handleClose();
+    if (isEdit) {
+      onUpdated?.();
+      await popup.success(
+        "แก้ไขผู้ใช้งานสำเร็จแล้ว",
+        "บันทึกข้อมูลผู้ดูแลระบบเรียบร้อยแล้ว"
+      );
+      return;
+    }
+
     onCreated();
     await popup.success(
       "เพิ่มผู้ใช้งานสำเร็จแล้ว",
@@ -494,7 +684,7 @@ export default function AdminCreateModal({
         <div className="flex items-center justify-between border-b border-[#eef2ff] px-6 py-4">
           <div>
             <h2 className="text-[18px] font-bold text-[#1f2640]">
-              เพิ่มผู้ดูแลระบบ
+              {isEdit ? "แก้ไขผู้ดูแลระบบ" : "เพิ่มผู้ดูแลระบบ"}
             </h2>
             {/* <p className="text-[13px] text-[#7a849c]">
               สร้างบัญชีผู้ใช้งานทีละขั้นตอน
@@ -511,9 +701,15 @@ export default function AdminCreateModal({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-6">
-          <Stepper currentStep={step} />
+          <Stepper currentStep={step} isEdit={isEdit} />
 
-          {step === 1 ? (
+          {detailLoading ? (
+            <p className="py-16 text-center text-[14px] text-[#7a849c]">
+              กำลังโหลดข้อมูลผู้ดูแลระบบ...
+            </p>
+          ) : null}
+
+          {!detailLoading && step === 1 ? (
             <div>
               <h3 className="text-[22px] font-bold text-[#1f2640]">
                 เลือกบทบาทผู้ใช้งาน
@@ -561,7 +757,7 @@ export default function AdminCreateModal({
             </div>
           ) : null}
 
-          {step === 2 ? (
+          {!detailLoading && step === 2 ? (
             <div>
               <h3 className="text-[22px] font-bold text-[#1f2640]">
                 กรอกข้อมูลผู้ใช้งาน
@@ -615,7 +811,7 @@ export default function AdminCreateModal({
 
                 <label className="block sm:col-span-2">
                   <span className="mb-2 block text-[13px] font-semibold text-[#1f2640]">
-                    รหัสผ่าน
+                    {isEdit ? "รหัสผ่านใหม่ (ไม่บังคับ)" : "รหัสผ่าน"}
                   </span>
                   <div className="relative">
                     <input
@@ -649,13 +845,19 @@ export default function AdminCreateModal({
                     </button>
                   </div>
                   <div className="mt-3">
-                    <PasswordPolicyChecklist password={form.password} />
+                    {!isEdit || form.password.length > 0 ? (
+                      <PasswordPolicyChecklist password={form.password} />
+                    ) : (
+                      <p className="text-[12px] text-[#7a849c]">
+                        เว้นว่างไว้หากไม่ต้องการเปลี่ยนรหัสผ่าน
+                      </p>
+                    )}
                   </div>
                 </label>
 
                 <label className="block sm:col-span-2">
                   <span className="mb-2 block text-[13px] font-semibold text-[#1f2640]">
-                    ยืนยันรหัสผ่าน
+                    {isEdit ? "ยืนยันรหัสผ่านใหม่" : "ยืนยันรหัสผ่าน"}
                   </span>
                   <div className="relative">
                     <input
@@ -695,7 +897,7 @@ export default function AdminCreateModal({
             </div>
           ) : null}
 
-          {step === 3 ? (
+          {!detailLoading && step === 3 ? (
             <div>
               <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
@@ -754,10 +956,12 @@ export default function AdminCreateModal({
             </div>
           ) : null}
 
-          {step === 4 ? (
+          {!detailLoading && step === 4 ? (
             <div>
               <h3 className="text-[22px] font-bold text-[#1f2640]">
-                ตรวจสอบและยืนยันการสร้าง
+                {isEdit
+                  ? "ตรวจสอบและยืนยันการแก้ไข"
+                  : "ตรวจสอบและยืนยันการสร้าง"}
               </h3>
               {/* <p className="mt-1 text-[14px] text-[#7a849c]">
                 ตรวจทานข้อมูลก่อนสร้างบัญชีผู้ดูแลระบบ
@@ -846,7 +1050,8 @@ export default function AdminCreateModal({
               onClick={
                 step === 1 ? () => void handleRequestClose() : handleBack
               }
-              className="inline-flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-[14px] font-semibold text-[#5b657d] transition hover:bg-[#f3f5f9]"
+              disabled={detailLoading}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-[14px] font-semibold text-[#5b657d] transition hover:bg-[#f3f5f9] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <FiArrowLeft className="h-4 w-4" />
               {step === 1 ? "ยกเลิก" : "ย้อนกลับ"}
@@ -856,7 +1061,8 @@ export default function AdminCreateModal({
               <button
                 type="button"
                 onClick={() => void handleNext()}
-                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl bg-[#2553D8] px-5 text-[14px] font-semibold text-white transition hover:bg-[#1d44b5]"
+                disabled={detailLoading}
+                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl bg-[#2553D8] px-5 text-[14px] font-semibold text-white transition hover:bg-[#1d44b5] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 ถัดไป
                 <FiArrowRight className="h-4 w-4" />
@@ -864,11 +1070,12 @@ export default function AdminCreateModal({
             ) : (
               <button
                 type="button"
-                onClick={() => void handleConfirmCreate()}
-                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl bg-[#16a34a] px-5 text-[14px] font-semibold text-white transition hover:bg-[#15803d]"
+                onClick={() => void handleConfirmSave()}
+                disabled={detailLoading}
+                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl bg-[#16a34a] px-5 text-[14px] font-semibold text-white transition hover:bg-[#15803d] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <FiCheck className="h-4 w-4" />
-                ยืนยันการสร้าง
+                {isEdit ? "ยืนยันการแก้ไข" : "ยืนยันการสร้าง"}
               </button>
             )}
           </div>

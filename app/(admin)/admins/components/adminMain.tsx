@@ -26,6 +26,7 @@ export default function AdminMain() {
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
+  const [editingAdminId, setEditingAdminId] = useState<number | null>(null);
 
   const fetchAdmins = useCallback(async () => {
     setLoading(true);
@@ -83,10 +84,7 @@ export default function AdminMain() {
   };
 
   const handleEditAdmin = (admin: AdminItem) => {
-    void popup.info(
-      "แก้ไขผู้ดูแลระบบ",
-      `ฟังก์ชันแก้ไข ${admin.display_name} จะพร้อมใช้งานเร็วๆ นี้`
-    );
+    setEditingAdminId(admin.id);
   };
 
   const handleDeleteAdmin = async (admin: AdminItem) => {
@@ -139,6 +137,18 @@ export default function AdminMain() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         onCreated={() => {
+          void fetchAdmins();
+        }}
+      />
+
+      <AdminCreateModal
+        open={editingAdminId != null}
+        adminId={editingAdminId}
+        onClose={() => setEditingAdminId(null)}
+        onCreated={() => {
+          void fetchAdmins();
+        }}
+        onUpdated={() => {
           void fetchAdmins();
         }}
       />
