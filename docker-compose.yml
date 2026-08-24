@@ -1,0 +1,17 @@
+services:
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # browser เรียก API ผ่าน host VPS — ไม่ใช้ชื่อ service ใน Docker network
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://187.52.125.210:3001/laundry/api/}
+    image: baan-laundry-admin:latest
+    container_name: baan-laundry-admin
+    restart: unless-stopped
+    ports:
+      - "${ADMIN_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0

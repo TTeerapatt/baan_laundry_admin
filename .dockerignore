@@ -4,11 +4,12 @@ node_modules
 .gitignore
 .env
 .env.*
+!.env.example
 *.md
 AGENTS.md
-Dockerfile
-.dockerignore
+CLAUDE.md
 npm-debug.log*
 .DS_Store
 .eslintrc*
 eslint.config.*
+tsconfig.tsbuildinfo
