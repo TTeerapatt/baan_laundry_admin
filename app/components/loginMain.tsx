@@ -243,7 +243,7 @@ export default function LoginMain() {
           </div>
 
           <h1 className="text-center text-[30px] font-bold leading-tight text-[#2553D8] sm:text-[34px]">
-            เข้าสู่ระบบ
+            เข้าสู่ระบบ Test Jenkins
           </h1>
 
           <form className="mt-12 space-y-6" onSubmit={handleSubmit}>
